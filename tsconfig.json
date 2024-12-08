@@ -2,10 +2,10 @@
   "compilerOptions": {
     "outDir": "dist",
     "experimentalDecorators": true,
-    "target": "ES2021",
+    "target": "ESNext" ,
     "moduleResolution": "NodeNext",
     "module": "NodeNext",
-    "sourceMap": true
+    // "sourceMap": true
   },
-  "include": ["decorator/**/*.ts"],
+  // "include": ["decorator/**/*.ts"],
 }

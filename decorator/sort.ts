@@ -2,6 +2,7 @@
 1. 属性装饰器、方法装饰器、访问装饰器 他们按照类中出现顺序从上往下依次执行
 2. 类装饰器最后执行
 3. 参数装饰器先于方法执行
+4. 方法有多个参数，参数装饰器从右往左执行
  */
 function classDecorator(target) {
   console.log('classDecorator');
