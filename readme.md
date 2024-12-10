@@ -4,3 +4,8 @@
 - rxjs 用于构建异步和事件驱动的库
 - reflect-metadata 实现元编程的库，提供元数据
 - @nestjs/platform-express nest的 express平台适配器，提供中间件，路由等
+
+
+// todo
+- nodemon -r tsconfig-paths/register src/main.ts
+- -r required, 预处理，在执行

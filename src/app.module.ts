@@ -1,5 +1,5 @@
 import {AppController} from "./app.controller"
-import { Module } from './@nestjs/common';
+import { Module } from '@nestjs/common';
 
 // 把类标记为一个模块，这样 Nest 就知道如何处理它
 @Module({

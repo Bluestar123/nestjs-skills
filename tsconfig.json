@@ -5,6 +5,10 @@
     "target": "ESNext" ,
     "moduleResolution": "NodeNext",
     "module": "NodeNext",
+    "baseUrl": "./",
+    "paths": {
+      // "@nestjs/*": ["src/@nestjs/*"]
+    },
     // "sourceMap": true
   },
   // "include": ["decorator/**/*.ts"],

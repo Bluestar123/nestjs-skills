@@ -1,7 +1,8 @@
 import { AppController } from './../../app.controller';
 import 'reflect-metadata'
-import express, {Express} from 'express'
+import express, {Express,NextFunction,Response, Request} from 'express'
 import { Logger } from './logger'
+import path from 'path';
 
 export class NestApplication {
   // 在内部 私有化一个 express 实例
@@ -26,6 +27,34 @@ export class NestApplication {
       const prefix = Reflect.getMetadata('prefix', Controller) || '/'
 
       Logger.log(`${Controller.name} {${prefix}}`, 'RoutesResolver')
+
+      // Reflect.getPrototypeOf(controller) === Controller.prototype
+      const controllerPrototype = Reflect.getPrototypeOf(controller)
+      for(const methodName of Object.getOwnPropertyNames(controllerPrototype)) {
+        // 原型上 index
+        const method = controllerPrototype[methodName]
+        const httpMethod = Reflect.getMetadata('method', method)
+        const pathMetadata = Reflect.getMetadata('path', method)
+        if (!httpMethod) {
+          // 不是 Get Post
+          continue
+        }
+        /**
+         * const app = express()
+         * app.get('/path', (req, res) => {})
+         * 
+         * path.posix 用于处理跨平台路径，例如 windows 和 linux，统一使用 /
+         */
+        const routePath = path.posix.join('/',prefix, pathMetadata)
+        // 当客户端1️⃣ httpmethod 方法请求 routePath 路径时，执行 controller 的 method 方法
+        this.app[httpMethod.toLowerCase()](routePath, (req: Request, res:Response, next: NextFunction) => {
+          const result = method.call(controller, req, res, next)
+          res.send(result)
+        })
+        Logger.log(`Mapped {${routePath}, ${httpMethod}} route`, 'RouteResolver')
+      }
+
+      Logger.log(`Nest application successfully started`, 'NestApplication')
 
     }
   }
