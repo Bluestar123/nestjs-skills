@@ -6,6 +6,6 @@
 - @nestjs/platform-express nest的 express平台适配器，提供中间件，路由等
 
 
-// todo
-- nodemon -r tsconfig-paths/register src/main.ts
+- npm i -D tsconfig-paths
+- nodemon -r tsconfig-paths/register src/main.ts, 别名解析。配置别名后 希望读取本地代码
 - -r required, 预处理，在执行

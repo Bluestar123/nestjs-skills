@@ -7,7 +7,7 @@
     "module": "NodeNext",
     "baseUrl": "./",
     "paths": {
-      // "@nestjs/*": ["src/@nestjs/*"]
+      "@nestjs/*": ["src/@nestjs/*"]
     },
     // "sourceMap": true
   },

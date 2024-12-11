@@ -48,7 +48,8 @@ export class NestApplication {
         const routePath = path.posix.join('/',prefix, pathMetadata)
         // 当客户端1️⃣ httpmethod 方法请求 routePath 路径时，执行 controller 的 method 方法
         this.app[httpMethod.toLowerCase()](routePath, (req: Request, res:Response, next: NextFunction) => {
-          const result = method.call(controller, req, res, next)
+          const args = this.resolveParams(controller, methodName, req, res, next)
+          const result = method.call(controller, ...args)
           res.send(result)
         })
         Logger.log(`Mapped {${routePath}, ${httpMethod}} route`, 'RouteResolver')
@@ -57,6 +58,28 @@ export class NestApplication {
       Logger.log(`Nest application successfully started`, 'NestApplication')
 
     }
+  }
+
+  resolveParams(instance, methodName, req, res, next) {
+    const paramsMetaData = Reflect.getMetadata(`params:${methodName}`, instance, methodName)
+    return paramsMetaData.sort((a, b) => a.parameterIndex - b.parameterIndex).map(param => {
+      const {key} = param
+      switch(key) {
+        case 'Request':
+        case 'Req':
+          return req
+        case 'Response':
+          return res
+        case 'Query':
+          return req.query
+        case 'Body':
+          return req.body
+        case 'Param':
+          return req.params
+        default:
+          return null
+      }
+    })
   }
 
   // 启动http服务, 监听 port 端口
