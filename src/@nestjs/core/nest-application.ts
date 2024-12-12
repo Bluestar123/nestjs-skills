@@ -61,8 +61,12 @@ export class NestApplication {
   }
 
   resolveParams(instance, methodName, req, res, next) {
-    const paramsMetaData = Reflect.getMetadata(`params:${methodName}`, instance, methodName)
-    return paramsMetaData.sort((a, b) => a.parameterIndex - b.parameterIndex).map(param => {
+    console.log(`params:${methodName}`,23 )
+
+    const paramsMetaData = Reflect.getMetadata(`params:${methodName}`, instance, methodName) || []
+    // sort((a, b) => a.parameterIndex - b.parameterIndex)
+    // 使用 arr[1] = {} 形式 不需要排序
+    return paramsMetaData.map(param => {
       const {key} = param
       switch(key) {
         case 'Request':
