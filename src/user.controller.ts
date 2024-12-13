@@ -1,4 +1,4 @@
-import { Controller, Get, Request, Req } from "@nestjs/common";
+import { Controller, Get, Request,Query, Req } from "@nestjs/common";
 import {Request as ExpressRequest} from 'express';
 
 @Controller('users')
@@ -8,5 +8,12 @@ export class UserController {
     console.log(req.url, req.method, req.path)
     console.log(age)
     return 'request'
+  }
+
+  @Get('query')
+  handleQuery(@Query() query: any, @Query('id') id:string){
+    console.log(query)
+    console.log(id)
+    return 'query'
   }
 }

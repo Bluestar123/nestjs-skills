@@ -67,7 +67,7 @@ export class NestApplication {
     // sort((a, b) => a.parameterIndex - b.parameterIndex)
     // 使用 arr[1] = {} 形式 不需要排序
     return paramsMetaData.map(param => {
-      const {key} = param
+      const {key, data} = param
       switch(key) {
         case 'Request':
         case 'Req':
@@ -75,6 +75,9 @@ export class NestApplication {
         case 'Response':
           return res
         case 'Query':
+          if (data) {
+            return req.query[data]
+          }
           return req.query
         case 'Body':
           return req.body
