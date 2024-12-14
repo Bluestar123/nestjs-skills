@@ -1,3 +1,4 @@
+import { Session } from '@nestjs/common';
 import { AppController } from './../../app.controller';
 import 'reflect-metadata'
 import express, {Express,NextFunction,Response, Request} from 'express'
@@ -63,9 +64,10 @@ export class NestApplication {
   resolveParams(instance, methodName, req, res, next) {
     console.log(`params:${methodName}`,23 )
 
-    const paramsMetaData = Reflect.getMetadata(`params:${methodName}`, instance, methodName) || []
+    const paramsMetaData = Reflect.getMetadata(`params:${methodName}`, instance, methodName) ?? []
     // sort((a, b) => a.parameterIndex - b.parameterIndex)
     // 使用 arr[1] = {} 形式 不需要排序
+    // arr[0, empty, 2]  map 不影响
     return paramsMetaData.map(param => {
       const {key, data} = param
       switch(key) {
@@ -79,14 +81,34 @@ export class NestApplication {
             return req.query[data]
           }
           return req.query
+        case 'Headers':
+          if (data) {
+            return req.headers[data]
+          }
+          return req.headers
+        case 'Session':
+          if (data) {
+            return req.session[data]
+          }
+          return req.session
+        case "Ip":
+          return req.ip
         case 'Body':
           return req.body
         case 'Param':
+          if (data) {
+            return req.params[data]
+          }
           return req.params
         default:
           return null
       }
     })
+  }
+
+  use(middleware: any) {
+    this.app.use(middleware)
+
   }
 
   // 启动http服务, 监听 port 端口
