@@ -10,7 +10,9 @@ export class NestApplication {
   private readonly app: Express = express()
 
   constructor(protected readonly module) {
-    
+    // 解析 post body 中间件
+    this.app.use(express.json()) // 把 json 格式 请求踢对象放在 req.body 上
+    this.app.use(express.urlencoded({extended: true})) // 把form 表单格式请求体放在 req.body 上
   }
 
   // 配置初始化工作，例如 路由
@@ -51,7 +53,13 @@ export class NestApplication {
         this.app[httpMethod.toLowerCase()](routePath, (req: Request, res:Response, next: NextFunction) => {
           const args = this.resolveParams(controller, methodName, req, res, next)
           const result = method.call(controller, ...args)
-          res.send(result)
+          // 判断 controller 的methodName 方法里有没使用 Res 或 Response 装饰器，如果用了，就业务自己处理返回
+          const responseMetadata = this.getResponseMetadata(controller, methodName)
+          // 没有response 装饰器，或者注入了同时设置了 passthrough 属性，都会 nestjs 接管响应
+          if (!responseMetadata || responseMetadata.data?.passthrough) {
+            // 返回给客户端
+            res.send(result)
+          }
         })
         Logger.log(`Mapped {${routePath}, ${httpMethod}} route`, 'RouteResolver')
       }
@@ -59,6 +67,10 @@ export class NestApplication {
       Logger.log(`Nest application successfully started`, 'NestApplication')
 
     }
+  }
+  private getResponseMetadata(controller, methodName) {
+    const paramsMetaData =  Reflect.getMetadata(`params:${methodName}`, controller, methodName) ?? []
+    return paramsMetaData.filter(Boolean).find(param => ['Response', 'Res'].includes(param.key))
   }
 
   resolveParams(instance, methodName, req, res, next) {
@@ -75,6 +87,7 @@ export class NestApplication {
         case 'Req':
           return req
         case 'Response':
+        case 'Res':
           return res
         case 'Query':
           if (data) {
@@ -94,6 +107,9 @@ export class NestApplication {
         case "Ip":
           return req.ip
         case 'Body':
+          if (data) {
+            return req.body[data]
+          }
           return req.body
         case 'Param':
           if (data) {
