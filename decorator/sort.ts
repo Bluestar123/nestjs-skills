@@ -3,6 +3,7 @@
 2. 类装饰器最后执行
 3. 参数装饰器先于方法执行
 4. 方法有多个参数，参数装饰器从右往左执行
+5. 函数有多个方法装饰器，从下往上执行
  */
 function classDecorator(target) {
   console.log('classDecorator');
@@ -36,7 +37,7 @@ class Example {
   @methodDecorator
   @methodDecorator1
   method(@parametorDecorator param) {
-
+    // 先1 后
   }
 
   @propertyDecorator

@@ -1,8 +1,12 @@
-import { Controller,Post,Body,Response, Param,Get, Request,Query,Session,Ip, Headers,Req } from "@nestjs/common";
+import { Controller,Post,Redirect,Next,Body,Response, Param,Get, Request,Query,Session,Ip, Headers,Req } from "@nestjs/common";
 import {Request as ExpressRequest, Response as ExpressResponse} from 'express';
 
 @Controller('users')
 export class UserController {
+  @Get() 
+  index() {
+    return 'users home'
+  }
   @Get('req')
   handleRequest(@Req() req: ExpressRequest,age: number, @Request() request:ExpressRequest){
     console.log(req.url, req.method, req.path)
@@ -22,6 +26,11 @@ export class UserController {
     console.log(headers)
     console.log(host)
     return 'headers'
+  }
+  @Get('next')
+  next(@Next() next) {
+    console.log(next)
+    next()
   }
 
   @Get('session')
@@ -53,7 +62,7 @@ export class UserController {
     // return res.send('xx')
   }
 
-  @Get(':id')
+  @Get('/params/:id')
   getUser(@Param('id') id: string, @Param() params: any){
     return 'user' + id
   }
@@ -70,6 +79,18 @@ export class UserController {
     return 'create user'
   }
 
+  // 访问 /users/redirect 会重定向到 /users
+  @Get('/redirect')
+  @Redirect('/users', 301)
+  handleredirect() {}
+
+  @Get('/redirect/baidu')
+  handleredirectBaidu() {
+    return {
+      url: 'https://www.baidu.com',
+      statusCode: 301
+    }
+  }
 }
 
 /**

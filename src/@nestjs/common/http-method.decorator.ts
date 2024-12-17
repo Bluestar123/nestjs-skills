@@ -27,3 +27,11 @@ export function Post(path: string = ''):MethodDecorator {
     Reflect.defineMetadata('method', 'post', descriptor.value)
   }
 }
+
+export function Redirect(url: string = '/', statusCode: number = 302):MethodDecorator {
+  return function (target: Function, key: string, descriptor: PropertyDescriptor) {
+    Reflect.defineMetadata('redirectUrl', url, descriptor.value)
+    // 给方法函数添加元数据
+    Reflect.defineMetadata('redirectStatusCode', statusCode, descriptor.value)
+  }
+}

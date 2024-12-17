@@ -38,6 +38,9 @@ export class NestApplication {
         const method = controllerPrototype[methodName]
         const httpMethod = Reflect.getMetadata('method', method)
         const pathMetadata = Reflect.getMetadata('path', method)
+
+        const redirectUrl = Reflect.getMetadata('redirectUrl', method)
+        const redirectStatusCode = Reflect.getMetadata('redirectStatusCode', method)
         if (!httpMethod) {
           // 不是 Get Post
           continue
@@ -53,6 +56,17 @@ export class NestApplication {
         this.app[httpMethod.toLowerCase()](routePath, (req: Request, res:Response, next: NextFunction) => {
           const args = this.resolveParams(controller, methodName, req, res, next)
           const result = method.call(controller, ...args)
+          if (result?.url) {
+            return res.redirect(result.statusCode,result.url)
+          }
+          // 如果需要重定向，就重定向到 redirectUrl
+          if (redirectUrl) {
+            return res.redirect(redirectStatusCode, redirectUrl)
+          }
+          // post 请求状态吗默认都是 201
+          if (httpMethod === 'POST') {
+            res.statusCode = 201
+          }
           // 判断 controller 的methodName 方法里有没使用 Res 或 Response 装饰器，如果用了，就业务自己处理返回
           const responseMetadata = this.getResponseMetadata(controller, methodName)
           // 没有response 装饰器，或者注入了同时设置了 passthrough 属性，都会 nestjs 接管响应
@@ -70,7 +84,8 @@ export class NestApplication {
   }
   private getResponseMetadata(controller, methodName) {
     const paramsMetaData =  Reflect.getMetadata(`params:${methodName}`, controller, methodName) ?? []
-    return paramsMetaData.filter(Boolean).find(param => ['Response', 'Res'].includes(param.key))
+    // 卡住，等待 next
+    return paramsMetaData.filter(Boolean).find(param => ['Response', 'Res', 'Next'].includes(param.key))
   }
 
   resolveParams(instance, methodName, req, res, next) {
@@ -116,6 +131,8 @@ export class NestApplication {
             return req.params[data]
           }
           return req.params
+        case 'Next':
+          return next
         default:
           return null
       }
