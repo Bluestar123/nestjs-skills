@@ -1,4 +1,4 @@
-import { Controller,Post,Redirect,Next,Body,Response, Param,Get, Request,Query,Session,Ip, Headers,Req } from "@nestjs/common";
+import { Controller,Header,Post,Redirect,Next,Body,Response, Param,Get, Request,Query,Session,Ip, Headers,Req, HttpCode } from "@nestjs/common";
 import {Request as ExpressRequest, Response as ExpressResponse} from 'express';
 
 @Controller('users')
@@ -67,6 +67,7 @@ export class UserController {
     return 'user' + id
   }
 
+  // 模糊匹配
   @Get('start/a*b')
   handleWildcard(){
     return 'wildcard'
@@ -90,6 +91,15 @@ export class UserController {
       url: 'https://www.baidu.com',
       statusCode: 301
     }
+  }
+
+  @Get('httpcode')
+  @HttpCode(500)
+  @Header('Cache-Control', 'none')
+  @Header('1', '1')
+  @Header('2', '2')
+  handleHttpCode() {
+    return 'http code'
   }
 }
 

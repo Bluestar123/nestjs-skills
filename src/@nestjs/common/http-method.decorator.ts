@@ -35,3 +35,19 @@ export function Redirect(url: string = '/', statusCode: number = 302):MethodDeco
     Reflect.defineMetadata('redirectStatusCode', statusCode, descriptor.value)
   }
 }
+export function HttpCode(statusCode: number = 200):MethodDecorator {
+  return function (target: Function, key: string, descriptor: PropertyDescriptor) {
+    Reflect.defineMetadata('statusCode', statusCode, descriptor.value)
+  }
+}
+
+// header 可以写多个,数组存储
+// @Header('key', 'value')
+// @Header('key1', 'value2')
+export function Header(name: string, value: string):MethodDecorator {
+  return function (target: Function, key: string, descriptor: PropertyDescriptor) {
+    const existingHeaders = Reflect.getMetadata('headers', descriptor.value) ?? []
+    existingHeaders.push({name, value})
+    Reflect.defineMetadata('headers', existingHeaders, descriptor.value)
+  }
+}

@@ -41,6 +41,10 @@ export class NestApplication {
 
         const redirectUrl = Reflect.getMetadata('redirectUrl', method)
         const redirectStatusCode = Reflect.getMetadata('redirectStatusCode', method)
+
+        const statusCode = Reflect.getMetadata('statusCode', method)
+
+        const headers = Reflect.getMetadata('headers', method)
         if (!httpMethod) {
           // 不是 Get Post
           continue
@@ -63,14 +67,20 @@ export class NestApplication {
           if (redirectUrl) {
             return res.redirect(redirectStatusCode, redirectUrl)
           }
-          // post 请求状态吗默认都是 201
-          if (httpMethod === 'POST') {
+
+          if (statusCode) {
+            res.statusCode = statusCode
+          } else if (httpMethod === 'POST') {
+            // post 请求状态吗默认都是 201
             res.statusCode = 201
           }
           // 判断 controller 的methodName 方法里有没使用 Res 或 Response 装饰器，如果用了，就业务自己处理返回
           const responseMetadata = this.getResponseMetadata(controller, methodName)
           // 没有response 装饰器，或者注入了同时设置了 passthrough 属性，都会 nestjs 接管响应
           if (!responseMetadata || responseMetadata.data?.passthrough) {
+            headers.forEach(({name, value}) => {
+              res.setHeader(name, value)
+            });
             // 返回给客户端
             res.send(result)
           }
