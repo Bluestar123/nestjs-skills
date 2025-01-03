@@ -1,5 +1,6 @@
 import { Controller,Header,Post,Redirect,Next,Body,Response, Param,Get, Request,Query,Session,Ip, Headers,Req, HttpCode } from "@nestjs/common";
 import {Request as ExpressRequest, Response as ExpressResponse} from 'express';
+import { User } from "./user.decorator";
 
 @Controller('users')
 export class UserController {
@@ -100,6 +101,11 @@ export class UserController {
   @Header('2', '2')
   handleHttpCode() {
     return 'http code'
+  }
+
+  @Get('req-user')
+  handleReqUser(@User() user){
+    return user
   }
 }
 

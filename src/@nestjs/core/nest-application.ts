@@ -13,6 +13,12 @@ export class NestApplication {
     // 解析 post body 中间件
     this.app.use(express.json()) // 把 json 格式 请求踢对象放在 req.body 上
     this.app.use(express.urlencoded({extended: true})) // 把form 表单格式请求体放在 req.body 上
+
+    // 测试 
+    this.app.use((req, res, next) => {
+      req.user = {a: 1, b: 2}
+      next()
+    })
   }
 
   // 配置初始化工作，例如 路由
@@ -44,7 +50,7 @@ export class NestApplication {
 
         const statusCode = Reflect.getMetadata('statusCode', method)
 
-        const headers = Reflect.getMetadata('headers', method)
+        const headers = Reflect.getMetadata('headers', method) ?? []
         if (!httpMethod) {
           // 不是 Get Post
           continue
@@ -106,7 +112,15 @@ export class NestApplication {
     // 使用 arr[1] = {} 形式 不需要排序
     // arr[0, empty, 2]  map 不影响
     return paramsMetaData.map(param => {
-      const {key, data} = param
+      const {key, data, factory} = param
+      const ctx = {
+        // 因为 nestjs 不仅支持 http，还支持 graphql，微服务 等，所以需要提供一个统一的上下文对象,switchToHttp方法
+        switchToHttp: () => ({
+          getRequest: () => req,
+          getResponse: () => res,
+          getNext: () => next
+        })
+      }
       switch(key) {
         case 'Request':
         case 'Req':
@@ -143,6 +157,8 @@ export class NestApplication {
           return req.params
         case 'Next':
           return next
+        case 'DecoratorFactory':
+          return factory(data,ctx)
         default:
           return null
       }
