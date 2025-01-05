@@ -3,8 +3,8 @@
     "outDir": "dist",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "target": "ESNext" , // stage3 hide
-    // "target": "ES2022",
+    // "target": "ESNext" , // stage3 hide
+    "target": "ES2022",
     "moduleResolution": "NodeNext",
     "module": "NodeNext",
     "baseUrl": "./",

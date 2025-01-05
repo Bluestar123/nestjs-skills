@@ -35,6 +35,7 @@ const propertyType = Reflect.getMetadata('design:type', Person.prototype, 'name'
 
 console.log({propertyType})
 
+// 获取构造行数的参数
 const paramTypes = Reflect.getMetadata('design:paramtypes', Person)
 console.log({paramTypes})
 
