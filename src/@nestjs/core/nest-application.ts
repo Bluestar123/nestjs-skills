@@ -21,6 +21,17 @@ export class NestApplication {
     })
   }
 
+  private resolveDeps(Controller) {
+    // 拿到 @Inject 装饰器的参数
+    const injectedTokens = Reflect.getMetadata('injectedTokens', Controller) ?? []
+    // 获取构造函数里没有被 @Inject 装饰器装饰的参数
+    const constructorParams = Reflect.getMetadata('design:paramtypes', Controller) ?? []
+    console.log({injectedTokens,constructorParams })
+    return constructorParams.map((param, index) => {
+      return injectedTokens[index] ?? param
+    })
+  }
+
   // 配置初始化工作，例如 路由
   async init() {
     // 取出模块里所有控制器，做好路由配置
@@ -30,8 +41,10 @@ export class NestApplication {
 
     // 遍历控制器，配置路由
     for(const Controller of controllers) {
+      // 解析出 控制器的依赖
+      const deps = this.resolveDeps(Controller)
       // 创建每个控制器实例
-      const controller  = new Controller()
+      const controller  = new Controller(...deps)
       // 取出控制器的前缀
       const prefix = Reflect.getMetadata('prefix', Controller) || '/'
 

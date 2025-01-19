@@ -9,3 +9,9 @@
 - npm i -D tsconfig-paths
 - nodemon -r tsconfig-paths/register src/main.ts, 别名解析。配置别名后 希望读取本地代码
 - -r required, 预处理，在执行
+
+
+## Providers
+- 定义 provider 类，使用 @Injectable 装饰
+- 在 Module 里注册 Provider 类
+- 在控制器里面使用或声明 provider 类

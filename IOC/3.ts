@@ -7,6 +7,7 @@
 
 import 'reflect-metadata'
 
+// 如果想让这个类被别人使用，需要加上装饰器
 function Injectable(target) {
   // 这里可以不写任何代码，次装饰器不需要执行任何操作，仅仅用于元数据的生成
 }
