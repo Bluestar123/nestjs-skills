@@ -7,7 +7,7 @@
  *  "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
  */
-import 'reflect-metadata'
+import 'reflect-metadata';
 
 function classDecorator(target) {}
 
@@ -17,30 +17,47 @@ function propDecorator(target, propertyKey) {}
 
 function methodDecorator(target, propertyKey, descriptor) {}
 
+class Test {
+  log() {}
+}
+
 @classDecorator
 class Person {
   @propDecorator
-  name: string
+  name: string;
 
-  constructor(@paramDecorator serviceA:string, @paramDecorator serviceB:number) {
-
-  }
+  constructor(
+    @paramDecorator serviceA: Test,
+    @paramDecorator serviceB: number
+  ) {}
 
   @methodDecorator
-  method(@paramDecorator serviceA:string,):string {
-    return 'method'
+  method(@paramDecorator serviceA: string): string {
+    return 'method';
   }
 }
-const propertyType = Reflect.getMetadata('design:type', Person.prototype, 'name')
+const propertyType = Reflect.getMetadata(
+  'design:type',
+  Person.prototype,
+  'name'
+);
 
-console.log({propertyType})
+console.log({ propertyType });
 
 // 获取构造行数的参数
-const paramTypes = Reflect.getMetadata('design:paramtypes', Person)
-console.log({paramTypes})
+const paramTypes = Reflect.getMetadata('design:paramtypes', Person);
+console.log({ paramTypes });
 
-const methodParamTypes = Reflect.getMetadata('design:paramtypes', Person.prototype, 'method')
-console.log({methodParamTypes})
+const methodParamTypes = Reflect.getMetadata(
+  'design:paramtypes',
+  Person.prototype,
+  'method'
+);
+console.log({ methodParamTypes });
 
-const returnType = Reflect.getMetadata('design:returntype', Person.prototype, 'method')
-console.log({returnType})
+const returnType = Reflect.getMetadata(
+  'design:returntype',
+  Person.prototype,
+  'method'
+);
+console.log({ returnType });
