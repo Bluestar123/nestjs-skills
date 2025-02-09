@@ -26,40 +26,118 @@ export class NestApplication {
     this.initProviders();
   }
 
+  // 涉及其他模块的导入导出
   initProviders() {
-    // 1. 先把 providers 绑定的 实力化存储在 this.providers 中，provide 和 值一一对应
-    // 2. 类中 constructor 使用的字段，design:paramtypes 拿到类型数组，从 this.providers 中获取，类型类就是key
-    const providers = Reflect.getMetadata('providers', this.module) ?? [];
+    // 获取模块导入的元数据
+    const imports = Reflect.getMetadata('imports', this.module) ?? [];
+    for (const importModule of imports) {
+      this.registerProvidersFromModule(importModule);
+    }
+    const providers = Reflect.getMetadata('providers', this.module);
+    // 添加自己的 providers
     for (const provider of providers) {
-      // 定义的provider是类
-      if (provider.provide && provider.useClass) {
-        // 递归拿到当前类的依赖
-        const deps = this.resolveDeps(provider.useClass);
-        const classInstance = new provider.useClass(...deps); // 此处不严谨，可能这个类还有依赖
-        this.providers.set(provider.provide, classInstance);
-      } else if (provider.provide && provider.useValue) {
-        // 提供的值，不需要容器实例化
-        this.providers.set(provider.provide, provider.useValue);
-      } else if (provider.provide && provider.useFactory) {
-        const inject = provider.inject ?? [];
-        // 注入的值 可能是个 字符串，也可能是个 token，在进行一下处理
-        const realInject = inject.map((token) => {
-          return this.getProciderByToken(token);
-        });
-        // 这里可能需要 注入参数
-        this.providers.set(
-          provider.provide,
-          provider.useFactory(...realInject)
-        );
-      } else {
-        const deps = this.resolveDeps(provider);
+      this.addProvider(provider);
+    }
+  }
 
-        // 直接写的类
-        this.providers.set(provider, new provider(...deps));
+  private registerProvidersFromModule(module) {
+    // loggerModule， 拿到导入的 providers，进行全量注册
+    const importedProviders = Reflect.getMetadata('providers', module);
+    // 1， 有可能导入的模块 只导出了一部分，并没有全部导出，使用 exports 过滤
+    const exports = Reflect.getMetadata('exports', module); // a导入的b模块里，b导出了什么
+    for (const exportToken of exports) {
+      // 2. exports 里还可能有 module
+      if (this.isModule(exportToken)) {
+        // 递归解析
+        this.registerProvidersFromModule(exportToken);
+      } else {
+        const provider = importedProviders.find((p) => {
+          return p === exportToken || p.provide === exportToken;
+        });
+        if (provider) {
+          this.addProvider(provider);
+        }
       }
     }
-    console.log(this.providers);
+    // 把 导入的 providers 添加进来
+    // 这里不需要了，因为上面已经处理了，需要过滤 expoprts 注入
+    // for (const provider of importedProviders) {
+    //   this.addProvider(provider);
+    // }
   }
+
+  isModule(exportToken) {
+    return (
+      exportToken &&
+      exportToken instanceof Function &&
+      Reflect.getMetadata('isModule', exportToken)
+    );
+  }
+
+  addProvider(provider) {
+    // 如果注册过了，直接返回 不操作，避免循环依赖
+    if (this.providers.has(provider.provide ?? provider)) {
+      return;
+    }
+    if (provider.provide && provider.useClass) {
+      // 递归拿到当前类的依赖
+      const deps = this.resolveDeps(provider.useClass);
+      const classInstance = new provider.useClass(...deps); // 此处不严谨，可能这个类还有依赖
+      this.providers.set(provider.provide, classInstance);
+    } else if (provider.provide && provider.useValue) {
+      // 提供的值，不需要容器实例化
+      this.providers.set(provider.provide, provider.useValue);
+    } else if (provider.provide && provider.useFactory) {
+      const inject = provider.inject ?? [];
+      // 注入的值 可能是个 字符串，也可能是个 token，在进行一下处理
+      const realInject = inject.map((token) => {
+        return this.getProciderByToken(token);
+      });
+      // 这里可能需要 注入参数
+      this.providers.set(provider.provide, provider.useFactory(...realInject));
+    } else {
+      const deps = this.resolveDeps(provider);
+
+      // 直接写的类
+      this.providers.set(provider, new provider(...deps));
+    }
+  }
+
+  // 简单版本如下
+  // initProviders() {
+  //   // 1. 先把 providers 绑定的 实力化存储在 this.providers 中，provide 和 值一一对应
+  //   // 2. 类中 constructor 使用的字段，design:paramtypes 拿到类型数组，从 this.providers 中获取，类型类就是key
+  //   const providers = Reflect.getMetadata('providers', this.module) ?? [];
+  //   for (const provider of providers) {
+  //     // 定义的provider是类
+  //     if (provider.provide && provider.useClass) {
+  //       // 递归拿到当前类的依赖
+  //       const deps = this.resolveDeps(provider.useClass);
+  //       const classInstance = new provider.useClass(...deps); // 此处不严谨，可能这个类还有依赖
+  //       this.providers.set(provider.provide, classInstance);
+  //     } else if (provider.provide && provider.useValue) {
+  //       // 提供的值，不需要容器实例化
+  //       this.providers.set(provider.provide, provider.useValue);
+  //     } else if (provider.provide && provider.useFactory) {
+  //       const inject = provider.inject ?? [];
+  //       // 注入的值 可能是个 字符串，也可能是个 token，在进行一下处理
+  //       const realInject = inject.map((token) => {
+  //         return this.getProciderByToken(token);
+  //       });
+  //       // 这里可能需要 注入参数
+  //       this.providers.set(
+  //         provider.provide,
+  //         provider.useFactory(...realInject)
+  //       );
+  //     } else {
+  //       const deps = this.resolveDeps(provider);
+
+  //       // 直接写的类
+  //       this.providers.set(provider, new provider(...deps));
+  //     }
+  //   }
+  //   console.log(this.providers);
+  // }
 
   private getProciderByToken(injectedToken) {
     return this.providers.get(injectedToken) ?? injectedToken;

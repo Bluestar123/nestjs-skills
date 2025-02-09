@@ -5,6 +5,7 @@ import {
   LoggerServiceProvide,
   UseValueService,
 } from './logger.service';
+import { CommonService } from './common.service';
 
 // @Inject() // 可以往这个类里注入，constructor 里使用，nestjs IOC 会自动注入，实例话
 @Controller()
@@ -15,8 +16,15 @@ export class AppController {
     private loggerService: LoggerService,
     @Inject('StringToken') private useValueService: UseValueService, // 可以不写类型，写 类型是为了 ts 提示
     @Inject('FactoryToken') private factoryToken: UseFactory, // 可以从 Inject 的 provide 赋值
-    private loggerServiceProvide: LoggerServiceProvide
+    private loggerServiceProvide: LoggerServiceProvide,
+    private commonService: CommonService
   ) {}
+
+  @Get('common')
+  common() {
+    this.commonService.log('common');
+    return 'common';
+  }
   @Get()
   index(): string {
     this.loggerService.log('index');
